@@ -1,0 +1,471 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Uptime Command Center</title>
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0f1117;
+    --surface:   #1a1d27;
+    --surface2:  #232734;
+    --border:    #2e3241;
+    --text:      #e2e4ea;
+    --muted:     #8b8fa3;
+    --green:     #22c55e;
+    --yellow:    #eab308;
+    --red:       #ef4444;
+    --blue:      #3b82f6;
+    --radius:    10px;
+  }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.2rem; font-weight: 700;
+  }
+  .topbar .logo .dot { width: 12px; height: 12px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
+  .topbar-actions { display: flex; align-items: center; gap: 14px; }
+  .topbar-actions input {
+    padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); width: 220px; font-size: .85rem;
+  }
+  .btn {
+    padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer;
+    font-size: .85rem; font-weight: 600;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn:hover { opacity: .85; }
+
+  /* ── LAYOUT ── */
+  .shell { display: flex; min-height: calc(100vh - 53px); }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+    padding: 18px 0; flex-shrink: 0;
+  }
+  .sidebar h4 { padding: 0 18px; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+  .sidebar ul { list-style: none; margin-bottom: 22px; }
+  .sidebar li a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 18px; color: var(--muted); text-decoration: none; font-size: .88rem;
+    transition: .15s;
+  }
+  .sidebar li a:hover, .sidebar li a.active { color: var(--text); background: var(--surface2); }
+  .sidebar li a .icon { width: 18px; text-align: center; }
+
+  /* ── MAIN ── */
+  .main { flex: 1; padding: 28px; overflow-y: auto; }
+  .main h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .main .subtitle { color: var(--muted); font-size: .88rem; margin-bottom: 22px; }
+
+  /* ── KPI CARDS ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 26px; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .kpi .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .kpi .value { font-size: 1.7rem; font-weight: 700; }
+  .kpi .change { font-size: .78rem; margin-top: 4px; }
+  .kpi .change.up   { color: var(--green); }
+  .kpi .change.down { color: var(--red); }
+
+  /* ── FILTER BAR ── */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .filter-chip {
+    padding: 5px 14px; border-radius: 20px; font-size: .8rem; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    transition: .15s;
+  }
+  .filter-chip:hover, .filter-chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  /* ── MONITOR TABLE ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 24px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-header h3 { font-size: .95rem; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left; padding: 10px 20px; font-size: .72rem; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted); border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 12px 20px; font-size: .88rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  /* status badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 20px; font-size: .78rem; font-weight: 600;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .badge.up   { background: #16291d; color: var(--green); }
+  .badge.up .dot   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .badge.warn { background: #2a2510; color: var(--yellow); }
+  .badge.warn .dot { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .badge.down { background: #2d1518; color: var(--red); }
+  .badge.down .dot { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse-red 1.2s infinite; }
+  @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* uptime bar */
+  .uptime-bar { display: flex; gap: 2px; align-items: flex-end; height: 26px; }
+  .uptime-bar .tick {
+    width: 5px; border-radius: 2px; transition: .2s;
+  }
+  .uptime-bar .tick:hover { opacity: .7; transform: scaleY(1.2); }
+
+  /* ── TIMELINE / CHART PLACEHOLDER ── */
+  .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .chart-placeholder {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    display: flex; flex-direction: column;
+  }
+  .chart-placeholder .chart-head { padding: 14px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: .95rem; }
+  .chart-body { flex: 1; display: flex; align-items: flex-end; padding: 20px; gap: 6px; min-height: 200px; }
+  .chart-body .bar-col {
+    flex: 1; border-radius: 4px 4px 0 0; transition: .2s; position: relative;
+  }
+  .chart-body .bar-col:hover { opacity: .8; }
+  .chart-body .bar-col .tip {
+    display: none; position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+    background: #000; padding: 2px 8px; border-radius: 4px; font-size: .7rem; white-space: nowrap;
+  }
+  .chart-body .bar-col:hover .tip { display: block; }
+
+  /* doughnut / ring placeholder */
+  .ring-wrap { display: flex; align-items: center; justify-content: center; flex: 1; padding: 20px; }
+  .ring {
+    width: 150px; height: 150px; border-radius: 50%; position: relative;
+    background: conic-gradient(var(--green) 0% 78%, var(--yellow) 78% 88%, var(--red) 88% 100%);
+  }
+  .ring::after {
+    content: ''; position: absolute; inset: 26px; border-radius: 50%; background: var(--surface);
+  }
+  .ring-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 2; font-weight: 700; font-size: 1.4rem;
+  }
+  .ring-label small { font-size: .72rem; color: var(--muted); font-weight: 400; }
+
+  /* ── INCIDENT LOG ── */
+  .incident-list { padding: 6px 20px 16px; }
+  .incident {
+    display: flex; align-items: flex-start; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .incident:last-child { border-bottom: none; }
+  .incident .i-dot { margin-top: 5px; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .incident .i-time { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+  .incident .i-title { font-weight: 600; font-size: .88rem; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) { .kpi-row { grid-template-columns: repeat(2,1fr); } .chart-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .sidebar { display:none; } .kpi-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP BAR ═══════════ -->
+<header class="topbar">
+  <div class="logo"><span class="dot"></span> UptimeHQ</div>
+  <div class="topbar-actions">
+    <input type="text" placeholder="Search monitors…" id="searchInput" oninput="filterTable()" />
+    <button class="btn btn-outline" onclick="refreshData()">↻ Refresh</button>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Add Monitor</button>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <h4>Navigation</h4>
+    <ul>
+      <li><a href="#" class="active"><span class="icon">▦</span> Dashboard</a></li>
+      <li><a href="#"><span class="icon">◉</span> Monitors</a></li>
+      <li><a href="#"><span class="icon">⚠</span> Incidents</a></li>
+      <li><a href="#"><span class="icon">📊</span> Reports</a></li>
+      <li><a href="#"><span class="icon">🔔</span> Alerts</a></li>
+    </ul>
+    <h4>Categories</h4>
+    <ul>
+      <li><a href="#"><span class="icon">🌐</span> Social Media</a></li>
+      <li><a href="#"><span class="icon">🛒</span> E-Commerce</a></li>
+      <li><a href="#"><span class="icon">☁️</span> Cloud / SaaS</a></li>
+      <li><a href="#"><span class="icon">🎮</span> Gaming</a></li>
+      <li><a href="#"><span class="icon">💳</span> Finance</a></li>
+    </ul>
+    <h4>Settings</h4>
+    <ul>
+      <li><a href="#"><span class="icon">⚙</span> Preferences</a></li>
+      <li><a href="#"><span class="icon">👤</span> Team</a></li>
+    </ul>
+  </aside>
+
+  <!-- ═══════════ MAIN CONTENT ═══════════ -->
+  <main class="main">
+    <h1>Command Center</h1>
+    <p class="subtitle" id="lastUpdated">Last updated: just now &middot; Monitoring 12 services</p>
+
+    <!-- ── KPI ROW ── -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Services Online</div>
+        <div class="value" style="color:var(--green)" id="kpiUp">9</div>
+        <div class="change up">↑ All stable</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Degraded</div>
+        <div class="value" style="color:var(--yellow)" id="kpiWarn">2</div>
+        <div class="change down">↑ 1 since last hour</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Down</div>
+        <div class="value" style="color:var(--red)" id="kpiDown">1</div>
+        <div class="change down">↑ 1 new outage</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Avg Uptime (30 d)</div>
+        <div class="value" id="kpiAvg">99.43%</div>
+        <div class="change up">↑ 0.12% vs prior</div>
+      </div>
+    </div>
+
+    <!-- ── CHARTS ROW ── -->
+    <div class="chart-grid">
+      <!-- Response-time chart -->
+      <div class="chart-placeholder">
+        <div class="chart-head">Response Time (last 24 h)</div>
+        <div class="chart-body" id="responseChart"></div>
+      </div>
+      <!-- Status ring -->
+      <div class="chart-placeholder">
+        <div class="chart-head">Overall Status</div>
+        <div class="ring-wrap">
+          <div class="ring">
+            <div class="ring-label">78%<small>Operational</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FILTER CHIPS ── -->
+    <div class="filter-bar">
+      <span class="filter-chip active" onclick="applyFilter(this,'all')">All</span>
+      <span class="filter-chip" onclick="applyFilter(this,'up')">🟢 Up</span>
+      <span class="filter-chip" onclick="applyFilter(this,'warn')">🟡 Degraded</span>
+      <span class="filter-chip" onclick="applyFilter(this,'down')">🔴 Down</span>
+    </div>
+
+    <!-- ── MONITORS TABLE ── -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Monitored Services</h3>
+        <span style="color:var(--muted);font-size:.8rem" id="countLabel">12 monitors</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Uptime (90 d)</th>
+            <th>Resp. Time</th>
+            <th>Last Checked</th>
+            <th>Uptime History</th>
+          </tr>
+        </thead>
+        <tbody id="monitorBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ── RECENT INCIDENTS ── -->
+    <div class="card">
+      <div class="card-header"><h3>Recent Incidents</h3><button class="btn btn-outline" style="font-size:.75rem">View All</button></div>
+      <div class="incident-list" id="incidentList"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ ADD-MONITOR MODAL ═══════════ -->
+<div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:420px;max-width:92vw;">
+    <h3 style="margin-bottom:14px;">Add New Monitor</h3>
+    <label style="font-size:.8rem;color:var(--muted);">Service Name</label>
+    <input id="mName" type="text" placeholder="e.g. GitHub" style="width:100%;padding:8px 12px;margin:4px 0 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;" />
+    <label style="font-size:.8rem;color:var(--muted);">URL</label>
+    <input id="mUrl" type="text" placeholder="https://github.com" style="width:100%;padding:8px 12px;margin:4px 0 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;" />
+    <label style="font-size:.8rem;color:var(--muted);">Check Interval</label>
+    <select id="mInterval" style="width:100%;padding:8px 12px;margin:4px 0 16px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.9rem;">
+      <option>Every 1 min</option><option>Every 5 min</option><option>Every 15 min</option>
+    </select>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addMonitor()">Add Monitor</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const monitors = [
+  { name:"Google",       url:"google.com",          status:"up",   uptime:99.99, resp:42,  cat:"cloud" },
+  { name:"YouTube",      url:"youtube.com",         status:"up",   uptime:99.97, resp:58,  cat:"social" },
+  { name:"Facebook",     url:"facebook.com",        status:"warn", uptime:99.21, resp:310, cat:"social" },
+  { name:"Twitter / X",  url:"x.com",               status:"up",   uptime:99.85, resp:95,  cat:"social" },
+  { name:"Amazon",       url:"amazon.com",          status:"up",   uptime:99.94, resp:67,  cat:"ecommerce" },
+  { name:"Shopify",      url:"shopify.com",         status:"up",   uptime:99.88, resp:83,  cat:"ecommerce" },
+  { name:"GitHub",       url:"github.com",          status:"up",   uptime:99.91, resp:71,  cat:"cloud" },
+  { name:"AWS",          url:"aws.amazon.com",      status:"up",   uptime:99.95, resp:39,  cat:"cloud" },
+  { name:"Slack",        url:"slack.com",           status:"warn", uptime:98.60, resp:420, cat:"cloud" },
+  { name:"Discord",      url:"discord.com",         status:"up",   uptime:99.78, resp:88,  cat:"social" },
+  { name:"Fortnite",     url:"fortnite.com",        status:"down", uptime:96.40, resp:0,   cat:"gaming" },
+  { name:"Stripe",       url:"stripe.com",          status:"up",   uptime:99.99, resp:45,  cat:"finance" },
+];
+
+const incidents = [
+  { title:"Fortnite – Complete outage detected",       time:"3 min ago",   color:"var(--red)"    },
+  { title:"Slack – Elevated response times",           time:"27 min ago",  color:"var(--yellow)" },
+  { title:"Facebook – Partial degradation in EU",      time:"1 h ago",     color:"var(--yellow)" },
+  { title:"AWS – Brief API latency spike (resolved)",  time:"4 h ago",     color:"var(--green)"  },
+  { title:"Discord – 502 errors (resolved)",           time:"6 h ago",     color:"var(--green)"  },
+];
+
+// ── RENDER HELPERS ──
+function randomTicks() {
+  const colors = ["var(--green)","var(--green)","var(--green)","var(--green)","var(--green)","var(--yellow)","var(--red)"];
+  let html = '';
+  for (let i = 0; i < 30; i++) {
+    const c = Math.random() > .12 ? "var(--green)" : (Math.random() > .5 ? "var(--yellow)" : "var(--red)");
+    const h = 10 + Math.random() * 16;
+    html += `<div class="tick" style="height:${h}px;background:${c}" title="Day ${i+1}"></div>`;
+  }
+  return html;
+}
+
+function statusBadge(s) {
+  const map = { up:['up','Operational'], warn:['warn','Degraded'], down:['down','Down'] };
+  const [cls, lbl] = map[s];
+  return `<span class="badge ${cls}"><span class="dot"></span>${lbl}</span>`;
+}
+
+function renderMonitors(filter = 'all', search = '') {
+  const tbody = document.getElementById('monitorBody');
+  const s = search.toLowerCase();
+  let rows = monitors.filter(m => (filter === 'all' || m.status === filter) && (!s || m.name.toLowerCase().includes(s) || m.url.toLowerCase().includes(s)));
+  tbody.innerHTML = rows.map(m => `
+    <tr data-status="${m.status}">
+      <td><strong>${m.name}</strong><br><span style="color:var(--muted);font-size:.78rem">${m.url}</span></td>
+      <td>${statusBadge(m.status)}</td>
+      <td>${m.uptime}%</td>
+      <td>${m.status==='down'?'—':m.resp+' ms'}</td>
+      <td style="color:var(--muted);font-size:.82rem">< 1 min ago</td>
+      <td><div class="uptime-bar">${randomTicks()}</div></td>
+    </tr>`).join('');
+  document.getElementById('countLabel').textContent = rows.length + ' monitor' + (rows.length !== 1 ? 's' : '');
+}
+
+function renderIncidents() {
+  document.getElementById('incidentList').innerHTML = incidents.map(i => `
+    <div class="incident">
+      <div class="i-dot" style="background:${i.color};box-shadow:0 0 6px ${i.color}"></div>
+      <div><div class="i-title">${i.title}</div><div class="i-time">${i.time}</div></div>
+    </div>`).join('');
+}
+
+function renderChart() {
+  const box = document.getElementById('responseChart');
+  let html = '';
+  const hours = ['12a','1a','2a','3a','4a','5a','6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p','11p'];
+  hours.forEach(h => {
+    const v = 30 + Math.random() * 130;
+    const c = v > 140 ? 'var(--red)' : v > 100 ? 'var(--yellow)' : 'var(--green)';
+    html += `<div class="bar-col" style="height:${v}px;background:${c}"><span class="tip">${h}: ${Math.round(v)} ms</span></div>`;
+  });
+  box.innerHTML = html;
+}
+
+// ── INTERACTIONS ──
+let currentFilter = 'all';
+function applyFilter(el, f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderMonitors(f, document.getElementById('searchInput').value);
+}
+function filterTable() { renderMonitors(currentFilter, document.getElementById('searchInput').value); }
+
+function refreshData() {
+  renderChart();
+  renderMonitors(currentFilter, document.getElementById('searchInput').value);
+  document.getElementById('lastUpdated').innerHTML = 'Last updated: just now &middot; Monitoring ' + monitors.length + ' services';
+}
+
+function openAddModal()  { document.getElementById('addModal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+function addMonitor() {
+  const n = document.getElementById('mName').value.trim();
+  const u = document.getElementById('mUrl').value.trim();
+  if (!n || !u) return;
+  monitors.push({ name:n, url:u, status:'up', uptime:100, resp: Math.floor(30+Math.random()*80), cat:'custom' });
+  closeAddModal();
+  document.getElementById('mName').value = '';
+  document.getElementById('mUrl').value = '';
+  refreshData();
+  // update KPI
+  document.getElementById('kpiUp').textContent = monitors.filter(m=>m.status==='up').length;
+}
+
+// ── INIT ──
+renderChart();
+renderMonitors();
+renderIncidents();
+</script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    
